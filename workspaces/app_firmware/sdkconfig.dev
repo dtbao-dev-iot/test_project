@@ -1,0 +1,5 @@
+# ──────────────────────────────────────────────────────────────
+# sdkconfig.dev — Development overrides (applied on top of defaults)
+# ──────────────────────────────────────────────────────────────
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+CONFIG_ESP_SYSTEM_PANIC_PRINT_REBOOT=y
