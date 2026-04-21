@@ -64,16 +64,23 @@ jobs:
 
       - name: Run cppcheck
         run: |
-          cppcheck \
+          FILES=$(find . -type f \( -name "*.c" -o -name "*.h" \) \
+            ! -path "./.git/*" \
+            ! -path "./build/*" \
+            ! -path "./managed_components/*" \
+            ! -path "./out/*" || true)
+
+          if [ -z "$FILES" ]; then
+            echo "No C/H files found. Skipping static analysis."
+            exit 0
+          fi
+
+          echo "$FILES" | xargs cppcheck \
             --enable=warning,style,performance,portability \
             --error-exitcode=1 \
             --suppress=missingIncludeSystem \
             --std=c11 \
-            --quiet \
-            --exclude=build \
-            --exclude=managed_components \
-            --exclude=out \
-            .
+            --quiet
 
   # ─────────────────────────────────────────────────────────
   # Job 3: ESP-IDF Build (Docker)
