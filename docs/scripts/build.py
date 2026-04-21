@@ -32,7 +32,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -41,7 +40,6 @@ from typing import Dict, List, Optional, Tuple
 # ---------------------------------------------------------------------------
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-VERSION_FILE = PROJECT_ROOT / "VERSION"
 CONFIG_FILE = PROJECT_ROOT / "configs_tool" / "config_workspace.json"
 PARTITIONS_CSV = PROJECT_ROOT / "configs_tool" / "partitions.csv"
 RELEASE_DIR = PROJECT_ROOT / "workspaces" / "release"
@@ -90,6 +88,12 @@ def setup_idf_env(config: Dict) -> None:
     """
     idf_path = config.get("idf_path", "")
     idf_python_env = config.get("idf_python_env", "")
+
+    # Fallback to IDF_PATH environment variable if not configured
+    if not idf_path:
+        idf_path = os.environ.get("IDF_PATH", "")
+        if idf_path:
+            log(f"Using IDF_PATH from environment: {idf_path}")
 
     if idf_path:
         idf_dir = Path(idf_path)
@@ -172,7 +176,7 @@ def _source_idf_export(export_script: Path) -> None:
                 f.write("@echo off\n")
                 f.write(f'call "{export_script}" >nul 2>&1\n')
                 f.write("if errorlevel 1 exit /b 1\n")
-                f.write(f'python "{helper_path}"\n')
+                f.write(f'"{sys.executable}" "{helper_path}"\n')
                 wrapper_path = Path(f.name)
 
             result = subprocess.run(
@@ -370,21 +374,6 @@ def validate_config(config: Dict) -> None:
 # ---------------------------------------------------------------------------
 
 
-def read_version() -> Tuple[str, str, str]:
-    """Read VERSION file and return (major, minor, patch)."""
-    if not VERSION_FILE.exists():
-        log_error(f"VERSION file not found: {VERSION_FILE}")
-        sys.exit(1)
-
-    content = VERSION_FILE.read_text(encoding="utf-8").strip()
-    match = re.match(r"^(\d+)\.(\d+)\.(\d+)$", content)
-    if not match:
-        log_error(f"VERSION file must be XX.YY.ZZ format, got '{content}'")
-        sys.exit(1)
-
-    return match.group(1), match.group(2), match.group(3)
-
-
 # ---------------------------------------------------------------------------
 # sdkconfig overrides
 # ---------------------------------------------------------------------------
@@ -437,12 +426,10 @@ def build_workspace(
     workspace: Path,
     workspace_name: str,
     config: Dict,
-    version: Tuple[str, str, str],
     args: argparse.Namespace,
 ) -> Dict[str, Path]:
     """Build a single workspace and return artifact paths."""
     verbose = args.verbose or args.ci
-    major, minor, patch = version
 
     # --- sdkconfig overrides ---
     overrides = get_sdkconfig_overrides(
@@ -716,7 +703,8 @@ def merge_binaries(
         log_error("No 'app_firmware' (ota_1) partition found in partition table.")
         sys.exit(1)
 
-    output_file = output_dir / "firmware_merged.bin"
+    merge_name = f"{fw_artifacts['app'].stem}_merge.bin"
+    output_file = output_dir / merge_name
 
     if "esptool.py" in (esptool or ""):
         cmd = [sys.executable, esptool]
@@ -752,24 +740,29 @@ def merge_binaries(
 
 
 def copy_to_release(
-    artifacts: Dict[str, Path],
+    bl_artifacts: Optional[Dict[str, Path]],
+    fw_artifacts: Optional[Dict[str, Path]],
     output_dir: Path,
     merged_bin: Optional[Path] = None,
 ) -> None:
-    """Copy artifacts to release directory."""
+    """Copy release artifacts using binary names from CMake build."""
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    for name, src in artifacts.items():
-        if src.exists():
-            dst = output_dir / src.name
-            shutil.copy2(src, dst)
-            log(f"  Copied {src.name} ({src.stat().st_size:,} bytes)")
+    if bl_artifacts:
+        dst = output_dir / bl_artifacts["app"].name
+        shutil.copy2(bl_artifacts["app"], dst)
+        log(f"  {dst.name} ({dst.stat().st_size:,} bytes)")
+
+    if fw_artifacts:
+        dst = output_dir / fw_artifacts["app"].name
+        shutil.copy2(fw_artifacts["app"], dst)
+        log(f"  {dst.name} ({dst.stat().st_size:,} bytes)")
 
     if merged_bin and merged_bin.exists():
         dst = output_dir / merged_bin.name
         if dst != merged_bin:
             shutil.copy2(merged_bin, dst)
-        log(f"  Copied {merged_bin.name} ({merged_bin.stat().st_size:,} bytes)")
+        log(f"  {merged_bin.name} ({dst.stat().st_size:,} bytes)")
 
 
 def generate_checksums(directory: Path) -> Path:
@@ -824,15 +817,12 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    os.system("cls" if sys.platform == "win32" else "clear")
     args = parse_args()
 
     log("=" * 50)
     log("dtbao-IoT Build Script")
     log("=" * 50)
-
-    # --- Read version ---
-    version = read_version()
-    log(f"Version: {version[0]}.{version[1]}.{version[2]}")
 
     # --- Load config ---
     config = load_config(args.config, args.ci)
@@ -869,6 +859,12 @@ def main() -> None:
     # --- Output directory ---
     output_dir = args.output_dir / config["build_type"] / config["idf_target"]
 
+    # --- Clean stale release files ---
+    if output_dir.exists():
+        for old_file in output_dir.glob("*"):
+            if old_file.is_file():
+                old_file.unlink()
+
     # --- Build ---
     fw_artifacts: Optional[Dict[str, Path]] = None
     bl_artifacts: Optional[Dict[str, Path]] = None
@@ -876,12 +872,12 @@ def main() -> None:
     if build_fw:
         log("-" * 40)
         log("Building firmware...")
-        fw_artifacts = build_workspace(WORKSPACE_FW, "app_firmware", config, version, args)
+        fw_artifacts = build_workspace(WORKSPACE_FW, "app_firmware", config, args)
 
     if build_bl:
         log("-" * 40)
         log("Building bootloader...")
-        bl_artifacts = build_workspace(WORKSPACE_BL, "app_bootloader", config, version, args)
+        bl_artifacts = build_workspace(WORKSPACE_BL, "app_bootloader", config, args)
 
     # --- Merge ---
     merged_bin: Optional[Path] = None
@@ -900,13 +896,34 @@ def main() -> None:
     # --- Copy to release ---
     log("-" * 40)
     log("Copying artifacts to release directory...")
-    if build_fw:
-        copy_to_release(fw_artifacts, output_dir, merged_bin if args.all else None)
-    elif build_bl:
-        copy_to_release(bl_artifacts, output_dir)
+    copy_to_release(
+        bl_artifacts if build_bl else None,
+        fw_artifacts if build_fw else None,
+        output_dir,
+        merged_bin=merged_bin if args.all else None,
+    )
 
     # --- Generate checksums ---
     generate_checksums(output_dir)
+
+    # --- Verify release files ---
+    if args.all:
+        log("-" * 40)
+        log("Verifying release files...")
+        expected = []
+        if bl_artifacts:
+            expected.append(bl_artifacts["app"].name)
+        if fw_artifacts:
+            expected.append(fw_artifacts["app"].name)
+        if merged_bin:
+            expected.append(merged_bin.name)
+        missing = [name for name in expected if not (output_dir / name).exists()]
+        if missing:
+            log_error(f"Missing release files: {', '.join(missing)}")
+            sys.exit(1)
+        for name in expected:
+            path = output_dir / name
+            log(f"  OK  {name} ({path.stat().st_size:,} bytes)")
 
     # --- Summary ---
     log("=" * 50)
