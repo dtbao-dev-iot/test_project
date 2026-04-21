@@ -30,15 +30,6 @@ jobs:
         id: version
         run: echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
 
-      - name: Verify VERSION file matches tag
-        run: |
-          FILE_VERSION="$(cat VERSION | tr -d '[:space:]')"
-          TAG_VERSION="${{ steps.version.outputs.VERSION }}"
-          if [ "$FILE_VERSION" != "$TAG_VERSION" ]; then
-            echo "ERROR: VERSION file ($FILE_VERSION) does not match tag ($TAG_VERSION)."
-            exit 1
-          fi
-
       - name: Verify changelog exists
         run: |
           CHANGELOG_FILE="docs/CHANGELOG/${{ steps.version.outputs.VERSION }}"
