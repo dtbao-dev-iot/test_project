@@ -1,0 +1,23 @@
+{
+    "toolname": "devkit",
+    "product_id": "esp32s3",
+    "buildno": "",
+    "idf_target": "esp32s3",
+    "idf_path": "C:/Espressif/frameworks/esp-idf-v5.5.3",
+    "build_type": "dev",
+    "pre_test_firmware": false,
+    "sdkconfig_overrides": {
+        "common": {},
+        "app_firmware": {},
+        "app_bootloader": {}
+    },
+    "ci_defaults": {
+        "toolname": "ci",
+        "product_id": "esp32s3",
+        "buildno": "",
+        "idf_path": "/opt/esp/idf",
+        "idf_python_env": "",
+        "build_type": "release",
+        "pre_test_firmware": false
+    }
+}

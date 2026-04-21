@@ -1,0 +1,10 @@
+# ESP-IDF Partition Table
+# Name, Type, SubType, Offset, Size, Flags
+nvs, data, nvs, , 16K,
+otadata, data, ota, , 8K,
+phy_init, data, phy, , 8K,
+app_bootloader, app, ota_0, , 1536K,
+app_firmware, app, ota_1, , 14592K,
+tool_setting, data, , , 64K,
+nvs_key, data, nvs_keys, , 4K , encrypted
+custom_nvs, data, nvs, , 24K,
