@@ -1,6 +1,6 @@
 {
-    "toolname": "devkit",
-    "product_id": "esp32s3",
+    "toolname": "data_monitor",
+    "product_id": "0x0001",
     "buildno": "",
     "idf_target": "esp32s3",
     "idf_path": "C:/Espressif/frameworks/esp-idf-v5.5.3",
@@ -16,7 +16,6 @@
         "product_id": "esp32s3",
         "buildno": "",
         "idf_path": "/opt/esp/idf",
-        "idf_python_env": "",
         "build_type": "release",
         "pre_test_firmware": false
     }

@@ -110,8 +110,9 @@ __pycache__/
 venv/
 
 # ============================================================
-# Build script generated
+# ESP-IDF Folder
 # ============================================================
 sdkconfig.overrides
 sdkconfig.overrides.hash
 workspaces/release/
+/managed_components
