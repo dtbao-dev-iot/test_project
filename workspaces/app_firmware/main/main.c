@@ -18,7 +18,7 @@ void app_main(void)
 {
     ESP_LOGI(TAG, "Firmware started — version: %s", PROJECT_VER);
 
-    while (1)
+    while(1)
     {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
