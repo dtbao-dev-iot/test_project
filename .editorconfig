@@ -1,0 +1,33 @@
+root = true
+
+# All files
+[*]
+indent_style  = space
+indent_size   = 4
+end_of_line   = lf
+charset       = utf-8
+trim_trailing_whitespace = true
+insert_final_newline     = true
+
+# C/C++ source files
+[*.{c,h,cpp,hpp}]
+indent_size = 4
+
+# YAML / GitHub Actions
+[*.{yml,yaml}]
+indent_size = 2
+
+# JSON
+[*.json]
+indent_size = 2
+
+# Markdown — preserve trailing spaces (used for line breaks)
+[*.md]
+trim_trailing_whitespace = false
+
+# Makefiles — must use tabs
+[Makefile]
+indent_style = tab
+
+[*.mk]
+indent_style = tab

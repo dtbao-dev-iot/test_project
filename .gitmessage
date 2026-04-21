@@ -1,0 +1,41 @@
+# <type>[(<scope>)][!]: <description>
+# |<-----------  max 100 characters  ----------->|
+#
+# ---------- TYPE (required) ----------
+#  feat      New feature
+#  fix       Bug fix
+#  refactor  Code restructure, no behavior change
+#  style     Formatting only (no logic change)
+#  docs      Documentation changes only
+#  perf      Performance improvement
+#  test      Tests added or corrected
+#  build     Build system / dependency changes
+#  ci        CI configuration changes
+#  chore     Other changes (no src/test touch)
+#
+# ---------- SCOPE (optional, lowercase noun) ----------
+#  Peripherals : uart | spi | i2c | adc | can | usb
+#  Abstraction : hal | driver | bsp
+#  Hardware    : gpio | timer | pwm | dma | watchdog
+#  OS/RTOS     : rtos | scheduler | task
+#  Boot        : bootloader | startup | linker
+#  Memory      : memory | heap | stack
+#  Tooling     : build | cmake | docs | ci
+#
+# Omit scope if change spans multiple unrelated areas.
+#
+# ---------- BODY (optional) ----------
+# Separate from header with a blank line.
+# Explain WHAT and WHY — not HOW.
+# Max 100 chars per line.
+#
+#
+# ---------- FOOTER (optional) ----------
+#  Fixes #123
+#  Related to #456
+#  BREAKING CHANGE: <description>
+#
+# Breaking change: add ! after type/scope
+#   AND/OR add BREAKING CHANGE: in footer
+#
+# ---- DO NOT EDIT LINES BELOW ----
