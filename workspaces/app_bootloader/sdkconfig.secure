@@ -1,0 +1,21 @@
+# ──────────────────────────────────────────────────────────────
+# sdkconfig.secure — Secure boot & flash encryption (production)
+# Enable only after secure boot signing key is generated.
+# ──────────────────────────────────────────────────────────────
+
+# Secure Boot V2 (RSA)
+CONFIG_SECURE_SIGNED_ON_BOOT=y
+CONFIG_SECURE_SIGNED_ON_UPDATE=y
+CONFIG_SECURE_SIGNED_APPS=y
+CONFIG_SECURE_BOOT_V2_RSA_SUPPORTED=y
+CONFIG_SECURE_BOOT_V2_PREFERRED=y
+CONFIG_SECURE_BOOT=y
+CONFIG_SECURE_BOOT_V2_ENABLED=y
+CONFIG_SECURE_BOOT_BUILD_SIGNED_BINARIES=y
+CONFIG_SECURE_BOOT_SIGNING_KEY="../../configs_tool/secure_boot_signing_key.pem"
+
+# Flash Encryption
+CONFIG_SECURE_FLASH_ENC_ENABLED=y
+CONFIG_SECURE_FLASH_ENCRYPTION_AES256=y
+CONFIG_SECURE_FLASH_ENCRYPTION_MODE_DEVELOPMENT=y
+CONFIG_SECURE_INSECURE_ALLOW_DL_MODE=y

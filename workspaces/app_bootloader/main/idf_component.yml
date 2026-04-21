@@ -1,0 +1,5 @@
+## IDF Component Manager Manifest File
+dependencies:
+  ## Add ESP-IDF component registry dependencies here, e.g.:
+  # espressif/esp_tinyusb: "^1.2"
+  idf: "^5.0"
