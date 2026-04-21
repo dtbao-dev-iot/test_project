@@ -1,0 +1,58 @@
+---
+Language:        Cpp
+Standard:        Latest
+
+# Column limit — matches dtbao-IoT commit header max (100 chars)
+ColumnLimit:     100
+
+# Indentation — 4 spaces, no tabs
+IndentWidth:     4
+TabWidth:        4
+UseTab:          Never
+ContinuationIndentWidth: 4
+
+# Braces — Allman style: opening brace on new line
+BreakBeforeBraces: Allman
+
+# Spaces
+SpaceBeforeParens:              Never
+SpacesInParentheses:            false
+SpacesInSquareBrackets:         false
+SpaceAfterCStyleCast:           false
+SpaceBeforeAssignmentOperators: true
+SpaceInEmptyParentheses:        false
+SpaceBeforeCpp11BracedList:     false
+
+# Alignment
+AlignConsecutiveAssignments:    false
+AlignConsecutiveDeclarations:   false
+AlignTrailingComments:          true
+AlignAfterOpenBracket:          Align
+
+# Short blocks — always expand (never inline)
+AllowShortBlocksOnASingleLine:       Never
+AllowShortFunctionsOnASingleLine:    None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine:        false
+AllowShortCaseLabelsOnASingleLine:   false
+
+# Break long lines
+BinPackArguments:  false
+BinPackParameters: false
+BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: true
+
+# Includes — never sort (preserve developer ordering)
+IncludeBlocks: Preserve
+SortIncludes:  Never
+
+# Pointer alignment — right side: uint8_t *p_data
+PointerAlignment: Right
+
+# Comments
+ReflowComments:               true
+SpacesBeforeTrailingComments: 2
+
+# Empty lines
+MaxEmptyLinesToKeep:          2
+KeepEmptyLinesAtTheStartOfBlocks: false

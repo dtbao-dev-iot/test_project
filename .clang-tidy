@@ -1,0 +1,82 @@
+---
+# Checks enabled for embedded C (dtbao-IoT style)
+Checks: >
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  misc-*,
+  performance-*,
+  portability-*,
+  readability-identifier-naming,
+  readability-inconsistent-declaration-parameter-name,
+  readability-misleading-indentation,
+  readability-non-const-parameter,
+  readability-redundant-control-flow,
+  -bugprone-easily-swappable-parameters,
+  -cert-dcl37-c,
+  -cert-dcl51-cpp,
+  -misc-unused-parameters,
+  -readability-magic-numbers,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+
+# Treat warnings as errors in CI
+WarningsAsErrors: ''
+
+# Only lint project headers, skip system/vendor headers
+HeaderFilterRegex: '.*\.(h|hpp)$'
+
+# Naming convention rules — dtbao-IoT coding style
+CheckOptions:
+  # Functions: snake_case, format <module>_<object>_<action>
+  - key: readability-identifier-naming.FunctionCase
+    value: lower_case
+
+  # Local variables: snake_case
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+
+  # Global variables: g_ prefix
+  - key: readability-identifier-naming.GlobalVariableCase
+    value: lower_case
+  - key: readability-identifier-naming.GlobalVariablePrefix
+    value: g_
+
+  # Static variables: s_ prefix
+  - key: readability-identifier-naming.StaticVariableCase
+    value: lower_case
+  - key: readability-identifier-naming.StaticVariablePrefix
+    value: s_
+
+  # Parameters: snake_case
+  - key: readability-identifier-naming.ParameterCase
+    value: lower_case
+
+  # Macros and constants: UPPER_SNAKE_CASE
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE
+
+  # Enum type: e_ prefix, _t suffix (e.g. e_error_t)
+  - key: readability-identifier-naming.EnumCase
+    value: lower_case
+  - key: readability-identifier-naming.EnumPrefix
+    value: e_
+  - key: readability-identifier-naming.EnumSuffix
+    value: _t
+
+  # Enum values: UPPER_SNAKE_CASE
+  - key: readability-identifier-naming.EnumConstantCase
+    value: UPPER_CASE
+
+  # Typedef: lower_case with _t suffix
+  - key: readability-identifier-naming.TypedefCase
+    value: lower_case
+  - key: readability-identifier-naming.TypedefSuffix
+    value: _t
+
+  # Struct type: st_ prefix, _t suffix (e.g. st_uart_config_t)
+  - key: readability-identifier-naming.StructCase
+    value: lower_case
+  - key: readability-identifier-naming.StructPrefix
+    value: st_
+  - key: readability-identifier-naming.StructSuffix
+    value: _t
