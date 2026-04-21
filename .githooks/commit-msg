@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# commit-msg: Validate Conventional Commits format
+# Based on dtbao-IoT Commit convention
+# Part of dtbao-IoT project setup — do not remove
+
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Remove comment lines (lines starting with #) for validation
+ACTUAL_MSG=$(echo "$COMMIT_MSG" | grep -v '^#' | sed '/^$/d' | head -1)
+
+# Skip if empty after stripping comments
+if [ -z "$ACTUAL_MSG" ]; then
+    echo "[commit-msg] ERROR: Commit message is empty."
+    exit 1
+fi
+
+# Skip merge commits
+if echo "$ACTUAL_MSG" | grep -qE "^Merge "; then
+    exit 0
+fi
+
+# Skip revert commits
+if echo "$ACTUAL_MSG" | grep -qE "^Revert "; then
+    exit 0
+fi
+
+# Skip WIP commits
+if echo "$ACTUAL_MSG" | grep -qiE "^WIP"; then
+    exit 0
+fi
+
+# Conventional Commits pattern:
+# <type>[(<scope>)][!]: <description>
+PATTERN="^(feat|fix|build|ci|docs|style|refactor|perf|test|chore)(\([a-z0-9_-]+\))?!?: .{1,}"
+
+if ! echo "$ACTUAL_MSG" | grep -qE "$PATTERN"; then
+    echo ""
+    echo "[commit-msg] ERROR: Commit message does not follow Conventional Commits format."
+    echo ""
+    echo "  Format : <type>[(<scope>)][!]: <description>"
+    echo "  Example: feat(uart): add DMA support for TX"
+    echo "  Example: fix(timer): correct prescaler calculation"
+    echo "  Example: feat(gpio)!: change pin config API (breaking change)"
+    echo ""
+    echo "  Valid types:"
+    echo "    feat | fix | build | ci | docs | style | refactor | perf | test | chore"
+    echo ""
+    exit 1
+fi
+
+# Check header length (max 100 chars per dtbao-IoT convention)
+HEADER_LEN=${#ACTUAL_MSG}
+if [ "$HEADER_LEN" -gt 100 ]; then
+    echo ""
+    echo "[commit-msg] ERROR: Commit header is too long ($HEADER_LEN chars, max 100)."
+    echo ""
+    echo "  Header: $ACTUAL_MSG"
+    echo ""
+    exit 1
+fi
+
+exit 0

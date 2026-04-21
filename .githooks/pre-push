@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# pre-push: Validate branch name + run cppcheck static analysis
+# Part of dtbao-IoT project setup — do not remove
+
+set -e
+
+# ─────────────────────────────────────────────────────────
+# 1. Branch name validation (dtbao-IoT convention)
+# ─────────────────────────────────────────────────────────
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# Allow main long-lived branches
+if [[ "$BRANCH" == "main" || "$BRANCH" == "developing" || "$BRANCH" == "HEAD" ]]; then
+    BRANCH_OK=true
+else
+    # Standard branch pattern: <type>/<ticket-number>-<description>
+    # e.g. feature/uart-123-add-dma-support
+    #      bugfix/gpio-456-fix-pin-config
+    #      hotfix/sec-789-patch-vulnerability
+    STANDARD_PATTERN="^(feature|bugfix|hotfix|chore|docs|test|refactor)/[a-z]+-[0-9]+-[a-z0-9-]+$"
+
+    # Release branch pattern: release/vX.Y.Z
+    # e.g. release/v25.01.00   (firmware)
+    #      release/v1.2.0       (library)
+    RELEASE_PATTERN="^release/v[0-9]+\.[0-9]+\.[0-9]+$"
+
+    if [[ "$BRANCH" =~ $STANDARD_PATTERN || "$BRANCH" =~ $RELEASE_PATTERN ]]; then
+        BRANCH_OK=true
+    else
+        BRANCH_OK=false
+    fi
+fi
+
+if [ "$BRANCH_OK" = false ]; then
+    echo ""
+    echo "[pre-push] ERROR: Branch name '$BRANCH' does not follow the naming convention."
+    echo ""
+    echo "  Standard pattern : <type>/<ticket-number>-<description>"
+    echo "    Examples:"
+    echo "      feature/uart-123-add-dma-support"
+    echo "      bugfix/gpio-456-fix-pin-config"
+    echo "      hotfix/sec-789-patch-vulnerability"
+    echo "      chore/build-101-update-cmake-version"
+    echo "      docs/doc-321-update-api-reference"
+    echo "      test/qa-111-add-uart-unit-tests"
+    echo "      refactor/core-444-simplify-state-machine"
+    echo ""
+    echo "  Release pattern  : release/v<major>.<minor>.<patch>"
+    echo "    Examples:"
+    echo "      release/v25.01.00   (firmware)"
+    echo "      release/v1.2.0      (library)"
+    echo ""
+    echo "  Allowed base branches: main, developing"
+    echo ""
+    exit 1
+fi
+
+# ─────────────────────────────────────────────────────────
+# 2. Static analysis with cppcheck
+# ─────────────────────────────────────────────────────────
+CPPCHECK=$(command -v cppcheck 2>/dev/null || true)
+
+if [ -z "$CPPCHECK" ]; then
+    echo ""
+    echo "[pre-push] WARNING: cppcheck not found. Skipping static analysis."
+    echo "  Install on Linux : sudo apt install cppcheck"
+    echo "  Install on Windows: choco install cppcheck"
+    echo ""
+    exit 0
+fi
+
+# Collect C/H files, excluding generated/build directories
+FILES=$(find . -type f \( -name "*.c" -o -name "*.h" \) \
+    ! -path "./.git/*" \
+    ! -path "./build/*" \
+    ! -path "./managed_components/*" \
+    ! -path "./out/*" \
+    ! -path "./workspaces/*/build/*" || true)
+
+if [ -z "$FILES" ]; then
+    echo "[pre-push] No C/H files found. Skipping static analysis."
+    exit 0
+fi
+
+echo "[pre-push] Running cppcheck static analysis..."
+echo "$FILES" | xargs cppcheck \
+    --enable=warning,style,performance,portability \
+    --suppress=missingIncludeSystem \
+    --std=c11 \
+    --quiet \
+    2>&1 || {
+    echo ""
+    echo "[pre-push] ERROR: cppcheck found issues. Fix them before pushing."
+    echo ""
+    exit 1
+}
+
+echo "[pre-push] Static analysis passed."
+exit 0
